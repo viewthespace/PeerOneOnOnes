@@ -5,8 +5,8 @@ GoogleSpreadsheet = GoogleDrive
 
 client = Google::APIClient.new
 auth = client.authorization
-auth.client_id = ENV["CLIENT_ID"]
-auth.client_secret = ENV["CLIENT_SECRET"]
+auth.client_id = ENV["POOO_CLIENT_ID"]
+auth.client_secret = ENV["POOO_CLIENT_SECRET"]
 auth.scope =
     "https://www.googleapis.com/auth/drive " +
     "https://spreadsheets.google.com/feeds/"
