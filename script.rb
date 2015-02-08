@@ -18,18 +18,33 @@ auth.fetch_access_token!
 access_token = auth.access_token
 
 session = GoogleDrive.login_with_oauth(access_token)
+spreadsheet = session.spreadsheet_by_key("17RtvMArCg87byGXuENlx1mWAJyPx0X6SPDlT1YdxEfU")
 
-ws = session.spreadsheet_by_key("17RtvMArCg87byGXuENlx1mWAJyPx0X6SPDlT1YdxEfU").worksheets[0]
+ws = spreadsheet.worksheets[0]
+ws_counts = spreadsheet.worksheets[1]
 
 peers = []
+score = 1
 
 for row in 2 .. ws.num_rows
-  peers << ws[row, 1]
+  peers << {id: row - 1, name: ws[row, 1]}
 end
 
-peers.shuffle!
+while (score > 0) do
+  score = 0
+  shuffled_peers = peers.shuffle
 
-puts 'Peers'
-peers.each_slice(2) do |b|
-  puts "#{b[0]} with #{b[1]}"
+  puts 'Peers'
+  shuffled_peers.each_slice(2) do |pair|
+    if pair[1]
+      puts "#{pair[0][:name]} with #{pair[1][:name]}"
+      score += ws_counts[pair[0][:id] + 1, pair[1][:id] + 1].to_i
+    else
+      puts "#{pair[0][:name]} sits this one out"
+      score += ws_counts[pair[0][:id] + 1, peers.count + 2].to_i
+    end
+  end
+  puts ''
 end
+
+puts "Number of repeats: #{score}"
