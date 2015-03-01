@@ -20,14 +20,18 @@ access_token = auth.access_token
 session = GoogleDrive.login_with_oauth(access_token)
 spreadsheet = session.spreadsheet_by_key("17RtvMArCg87byGXuENlx1mWAJyPx0X6SPDlT1YdxEfU")
 
-ws = spreadsheet.worksheets[0]
+@ws = spreadsheet.worksheets[0]
 ws_counts = spreadsheet.worksheets[1]
+
+def grab_peer? row
+  @ws[row, 2].downcase.start_with? 'y'
+end
 
 peers = []
 score = 1
 
-for row in 2 .. ws.num_rows
-  peers << {id: row - 1, name: ws[row, 1]}
+for row in 2 .. @ws.num_rows
+  peers << {id: row - 1, name: @ws[row, 1]}  if grab_peer? row
 end
 
 while (score > 0) do
