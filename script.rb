@@ -34,21 +34,31 @@ for row in 2 .. @ws.num_rows
   peers << {id: row - 1, name: @ws[row, 1]}  if grab_peer? row
 end
 
+# Find pairs
 while (score > 0) do
   score = 0
+  pairs = []
   shuffled_peers = peers.shuffle
 
-  puts 'Peers'
   shuffled_peers.each_slice(2) do |pair|
-    if pair[1]
-      puts "#{pair[0][:name]} with #{pair[1][:name]}"
+    pairs << pair
+    if pair.length > 1
       score += ws_counts[pair[0][:id] + 1, pair[1][:id] + 1].to_i
     else
-      puts "#{pair[0][:name]} sits this one out"
       score += ws_counts[pair[0][:id] + 1, peers.count + 2].to_i
     end
   end
-  puts ''
 end
+
+# Write peers
+puts 'Peers'
+pairs.each do |pair|
+  puts "#{pair[0][:name]} with #{pair[1][:name]}"
+  if pair.length == 1
+    puts "#{pair[0][:name]} sits this one out"
+  end
+end
+
+puts ''
 
 puts "Number of repeats: #{score}"
