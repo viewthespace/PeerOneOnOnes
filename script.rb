@@ -53,11 +53,20 @@ end
 # Write peers
 puts 'Peers'
 pairs.each do |pair|
+
+  # Write to Google Drive
+  times_paired = ws_counts[pair[0][:id] + 1, pair[1][:id] + 1].to_i
+
+  ws_counts[pair[0][:id] + 1, pair[1][:id] + 1] = times_paired + 1
+  ws_counts[pair[1][:id] + 1, pair[0][:id] + 1] = times_paired + 1
+
+  # Write to console
   puts "#{pair[0][:name]} with #{pair[1][:name]}"
   if pair.length == 1
     puts "#{pair[0][:name]} sits this one out"
   end
 end
+ws_counts.save
 
 puts ''
 
