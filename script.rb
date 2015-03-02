@@ -21,53 +21,60 @@ session = GoogleDrive.login_with_oauth(access_token)
 spreadsheet = session.spreadsheet_by_key("17RtvMArCg87byGXuENlx1mWAJyPx0X6SPDlT1YdxEfU")
 
 @ws = spreadsheet.worksheets[0]
-ws_counts = spreadsheet.worksheets[1]
+@ws_counts = spreadsheet.worksheets[1]
+
+@peers = []
+@pairs = []
+@score = 1
 
 def grab_peer? row
   @ws[row, 2].downcase.start_with? 'y'
 end
 
-peers = []
-score = 1
-
-for row in 2 .. @ws.num_rows
-  peers << {id: row - 1, name: @ws[row, 1]}  if grab_peer? row
+def read_peers
+  for row in 2 .. @ws.num_rows
+    peers << {id: row - 1, name: @ws[row, 1]}  if grab_peer? row
+  end
 end
 
-# Find pairs
-while (score > 0) do
-  score = 0
-  pairs = []
-  shuffled_peers = peers.shuffle
+def find_pairs
+  while (@score > 0) do
+    @score = 0
+    @pairs = []
+    shuffled_peers = peers.shuffle
 
-  shuffled_peers.each_slice(2) do |pair|
-    pairs << pair
-    if pair.length > 1
-      score += ws_counts[pair[0][:id] + 1, pair[1][:id] + 1].to_i
-    else
-      score += ws_counts[pair[0][:id] + 1, peers.count + 2].to_i
+    shuffled_peers.each_slice(2) do |pair|
+      @pairs << pair
+      if pair.length > 1
+        @score += @ws_counts[pair[0][:id] + 1, pair[1][:id] + 1].to_i
+      else
+        @score += @ws_counts[pair[0][:id] + 1, peers.count + 2].to_i
+      end
     end
   end
 end
 
-# Write peers
-puts 'Peers'
-pairs.each do |pair|
+def write_peers
+  puts 'Peers'
+  @pairs.each do |pair|
 
-  # Write to Google Drive
-  times_paired = ws_counts[pair[0][:id] + 1, pair[1][:id] + 1].to_i
+    # Write to Google Drive
+    times_paired = @ws_counts[pair[0][:id] + 1, pair[1][:id] + 1].to_i
 
-  ws_counts[pair[0][:id] + 1, pair[1][:id] + 1] = times_paired + 1
-  ws_counts[pair[1][:id] + 1, pair[0][:id] + 1] = times_paired + 1
+    @ws_counts[pair[0][:id] + 1, pair[1][:id] + 1] = times_paired + 1
+    @ws_counts[pair[1][:id] + 1, pair[0][:id] + 1] = times_paired + 1
 
-  # Write to console
-  puts "#{pair[0][:name]} with #{pair[1][:name]}"
-  if pair.length == 1
-    puts "#{pair[0][:name]} sits this one out"
+    # Write to console
+    puts "#{pair[0][:name]} with #{pair[1][:name]}"
+    if pair.length == 1
+      puts "#{pair[0][:name]} sits this one out"
+    end
+    puts ''
+    puts "Number of repeats: #{@score}"
   end
+  @ws_counts.save
 end
-ws_counts.save
 
-puts ''
-
-puts "Number of repeats: #{score}"
+read_peers
+find_pairs
+write_peers
