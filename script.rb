@@ -23,8 +23,6 @@ spreadsheet = session.spreadsheet_by_key("17RtvMArCg87byGXuENlx1mWAJyPx0X6SPDlT1
 @ws = spreadsheet.worksheets[0]
 @ws_counts = spreadsheet.worksheets[1]
 
-@peers = []
-@pairs = []
 @score = 1
 
 def grab_peer? row
@@ -32,19 +30,21 @@ def grab_peer? row
 end
 
 def read_peers
+  peers = []
   for row in 2 .. @ws.num_rows
     peers << {id: row - 1, name: @ws[row, 1]}  if grab_peer? row
   end
+  peers
 end
 
-def find_pairs
+def find_pairs peers
   while (@score > 0) do
     @score = 0
-    @pairs = []
+    pairs = []
     shuffled_peers = peers.shuffle
 
     shuffled_peers.each_slice(2) do |pair|
-      @pairs << pair
+      pairs << pair
       if pair.length > 1
         @score += @ws_counts[pair[0][:id] + 1, pair[1][:id] + 1].to_i
       else
@@ -52,11 +52,12 @@ def find_pairs
       end
     end
   end
+  pairs
 end
 
-def write_peers
+def write_peers pairs
   puts 'Peers'
-  @pairs.each do |pair|
+  pairs.each do |pair|
 
     # Write to Google Drive
     times_paired = @ws_counts[pair[0][:id] + 1, pair[1][:id] + 1].to_i
@@ -69,12 +70,12 @@ def write_peers
     if pair.length == 1
       puts "#{pair[0][:name]} sits this one out"
     end
-    puts ''
-    puts "Number of repeats: #{@score}"
   end
+  puts ''
+  puts "Number of repeats: #{@score}"
   @ws_counts.save
 end
 
-read_peers
-find_pairs
-write_peers
+peers = read_peers
+pairs = find_pairs peers
+write_peers pairs
