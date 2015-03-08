@@ -16,6 +16,7 @@ print("2. Enter the authorization code shown in the page: ")
 auth.code = $stdin.gets.chomp
 auth.fetch_access_token!
 access_token = auth.access_token
+@postmark_client = Postmark::ApiClient.new(POSTMARK_API_TOKEN)
 
 session = GoogleDrive.login_with_oauth(access_token)
 spreadsheet = session.spreadsheet_by_key("17RtvMArCg87byGXuENlx1mWAJyPx0X6SPDlT1YdxEfU")
@@ -32,7 +33,7 @@ end
 def read_peers
   peers = []
   for row in 2 .. @ws.num_rows
-    peers << {id: row - 1, name: @ws[row, 1]}  if grab_peer? row
+    peers << {id: row - 1, name: @ws[row, 1], email: @ws[row, 2]}  if grab_peer? row
   end
   peers
 end
@@ -76,6 +77,24 @@ def write_peers pairs
   @ws_counts.save
 end
 
+def email_peers pairs
+  puts 'Sending Emails...'
+  pairs.each do |pair|
+    @postmark_client.deliver(
+      from: 'dan.ubilla@vts.com',
+      to: [pair[0][:email], pair[1][:email]],
+      subject: 'Random Peer 1:1s',
+      html_body: 'Hi there,
+
+This message is to inform you that the both of you have been randomly paired for Peer 1:1s this week. Try and find a time that works for the both of you.
+
+Thanks!',
+      track_opens: true
+    )
+  end
+end
+
 peers = read_peers
 pairs = find_pairs peers
 write_peers pairs
+email_peers pairs
