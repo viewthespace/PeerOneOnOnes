@@ -18,7 +18,7 @@ print("2. Enter the authorization code shown in the page: ")
 auth.code = $stdin.gets.chomp
 auth.fetch_access_token!
 access_token = auth.access_token
-@postmark_client = Postmark::ApiClient.new(POSTMARK_API_TOKEN)
+@postmark_client = Postmark::ApiClient.new(ENV["POSTMARK_API_TOKEN"])
 
 session = GoogleDrive.login_with_oauth(access_token)
 spreadsheet = session.spreadsheet_by_key("17RtvMArCg87byGXuENlx1mWAJyPx0X6SPDlT1YdxEfU")
