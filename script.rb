@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 
 require "google_drive"
+require "postmark"
+
 GoogleSpreadsheet = GoogleDrive
 
 client = Google::APIClient.new
