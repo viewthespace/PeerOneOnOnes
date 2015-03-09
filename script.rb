@@ -35,7 +35,7 @@ end
 def read_peers
   peers = []
   for row in 2 .. @ws.num_rows
-    peers << {id: row - 1, name: @ws[row, 1], email: @ws[row, 2]}  if grab_peer? row
+    peers << {id: row - 1, name: @ws[row, 1], email: @ws[row, 3]}  if grab_peer? row
   end
   peers
 end
