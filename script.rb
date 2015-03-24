@@ -61,17 +61,18 @@ end
 def write_peers pairs
   puts 'Peers'
   pairs.each do |pair|
+    if pair.length == 2
+      # Write to Google Drive
+      times_paired = @ws_counts[pair[0][:id] + 1, pair[1][:id] + 1].to_i
 
-    # Write to Google Drive
-    times_paired = @ws_counts[pair[0][:id] + 1, pair[1][:id] + 1].to_i
+      @ws_counts[pair[0][:id] + 1, pair[1][:id] + 1] = times_paired + 1
+      @ws_counts[pair[1][:id] + 1, pair[0][:id] + 1] = times_paired + 1
 
-    @ws_counts[pair[0][:id] + 1, pair[1][:id] + 1] = times_paired + 1
-    @ws_counts[pair[1][:id] + 1, pair[0][:id] + 1] = times_paired + 1
-
-    # Write to console
-    puts "#{pair[0][:name]} with #{pair[1][:name]}"
-    if pair.length == 1
-      puts "#{pair[0][:name]} sits this one out"
+      # Write to console
+      puts "#{pair[0][:name]} with #{pair[1][:name]}"
+      if pair.length == 1
+        puts "#{pair[0][:name]} sits this one out"
+      end
     end
   end
   puts ''
@@ -82,17 +83,19 @@ end
 def email_peers pairs
   puts 'Sending Emails...'
   pairs.each do |pair|
-    @postmark_client.deliver(
-      from: 'dan.ubilla@vts.com',
-      to: [pair[0][:email], pair[1][:email]],
-      subject: 'Random Peer 1:1s',
-      html_body: 'Hi there,
+    if pair.length == 2
+      @postmark_client.deliver(
+        from: 'dan.ubilla@vts.com',
+        to: [pair[0][:email], pair[1][:email]],
+        subject: 'Random Peer 1:1s',
+        html_body: 'Hi there,
 
-This message is to inform you that the both of you have been randomly paired for Peer 1:1s this week. Try and find a time that works for the both of you.
+  This message is to inform you that the both of you have been randomly paired for Peer 1:1s this week. Try and find a time that works for the both of you.
 
-Thanks!',
-      track_opens: true
-    )
+  Thanks!',
+        track_opens: true
+      )
+    end
   end
 end
 
