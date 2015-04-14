@@ -41,7 +41,7 @@ def read_peers
 end
 
 def find_pairs peers
-  while (@score > 1) do
+  while (@score > 0) do
     @score = 0
     pairs = []
     shuffled_peers = peers.shuffle
