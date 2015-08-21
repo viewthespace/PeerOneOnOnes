@@ -1,4 +1,4 @@
 source 'https://rubygems.org'
 
-gem 'activerecord'
-gem 'postmark'
+gem 'rails'
+gem 'pg'
