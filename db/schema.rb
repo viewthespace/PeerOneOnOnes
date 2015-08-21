@@ -19,6 +19,7 @@ ActiveRecord::Schema.define(version: 20150821200907) do
   create_table "meetings", force: true do |t|
     t.integer  "primary_user_id"
     t.integer  "secondary_user_id"
+    t.datetime "archived_at"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
