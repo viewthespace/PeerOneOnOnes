@@ -84,49 +84,56 @@
 #assume system has at least two users
 #what to do when user is added
 #what to do when user is removed
+#maybe come up with a way that doesn't use the same combination again
 
+@number_of_searches = 0
+
+puts "searching"
 
 def find_pairs
-  puts "searching for pairs..."
+  @number_of_searches += 1
+  # puts "searching for pairs... #{@number_of_searches += 1}"
   user_ids = User.all.map(&:id)
 
   number_of_combinations = user_ids.combination(2).to_a.size
 
-  puts "#{number_of_combinations} COMBINATIONS"
+  # puts "#{number_of_combinations} COMBINATIONS"
 
   meeting_user_ids = Meeting.where('archived_at is null').map{|m| [m.primary_user_id, m.secondary_user_id].sort}.sort.uniq
+
+  # puts "#{meeting_user_ids.size} meetings"
 
   paired_user_ids = user_ids.shuffle.each_slice(2).to_a.map(&:sort).sort
   paired_user_ids_with_complete_pairs = paired_user_ids.select{ |p| p.size == 2}
 
-  puts "meeting user ids: #{meeting_user_ids}"
-  # puts "paired user ids: #{paired_user_ids}"
-  puts "paired_user_ids_with_complete_pairs: #{paired_user_ids_with_complete_pairs}"
+  # puts "meeting user ids: #{meeting_user_ids}"
+  # puts "paired_user_ids_with_complete_pairs: #{paired_user_ids_with_complete_pairs}"
 
 
   if (meeting_user_ids & paired_user_ids_with_complete_pairs).present?
     # puts (meeting_user_ids & paired_user_ids_with_complete_pairs).to_s
 
-    if meeting_user_ids.size == number_of_combinations
+    if meeting_user_ids.size == number_of_combinations || (number_of_combinations - meeting_user_ids.size) <= paired_user_ids_with_complete_pairs.size
       puts "all #{number_of_combinations} combinations have been exhausted, ARCHIVING ALL MEETINGS"
       meeting_user_ids.each do |pair|
         Meeting.where(primary_user_id: pair[0], secondary_user_id: pair[1]).each(&:archive)
         Meeting.where(primary_user_id: pair[1], secondary_user_id: pair[0]).each(&:archive)
       end
-      # find_pairs
-    # elsif (paired_user_ids_with_complete_pairs - meeting_user_ids).blank?
-      # find_pairs
     end
     find_pairs
   else
     paired_user_ids.each do |pair|
       if pair.size == 2
-        puts "creating a meeting for #{pair[0]} and #{pair[1]}"
+        # puts "creating a meeting for #{pair[0]} and #{pair[1]}"
         Meeting.create(primary_user_id: pair[0], secondary_user_id: pair[1])
       else
         # email person saying no pair this week
       end
     end
+    puts "tried #{@number_of_searches} combinations"
+    puts "#{number_of_combinations} COMBINATIONS"
+    new_meetings = Meeting.where('archived_at is null').map{|m| [m.primary_user_id, m.secondary_user_id].sort}.sort.uniq
+    puts "#{new_meetings.size} new meetings exist now"
   end
 end
 
